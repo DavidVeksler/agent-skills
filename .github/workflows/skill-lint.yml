@@ -1,0 +1,16 @@
+name: skill-lint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DavidVeksler/skill-lint@main
+        with:
+          paths: skills/
+          fail-on: error
