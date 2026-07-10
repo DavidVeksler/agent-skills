@@ -2,7 +2,7 @@
 
 [![skill-lint](https://github.com/DavidVeksler/agent-skills/actions/workflows/skill-lint.yml/badge.svg)](https://github.com/DavidVeksler/agent-skills/actions/workflows/skill-lint.yml)
 
-A small collection of AI agent skills I actually use, published as plain Markdown.
+A small, portable collection of AI agent skills I actually use, published as plain `SKILL.md` Markdown files — LLM tooling that works with Claude and any other agent harness, not just one vendor's SDK.
 
 A "skill" here is one `SKILL.md` file: a `name` + `description` header the router matches against, and a body of instructions the agent follows once it's invoked. That's the whole format. No SDK, no framework import, no vendor API call baked into the skill itself — just text an LLM reads before acting. Written for [Claude Code / Cowork skills](https://docs.claude.com/en/docs/claude-code/skills) because that's what I run day to day, but there is nothing Claude-specific in the instructions: drop a `SKILL.md` into any agent harness that can inject a file into context (a system prompt, a Cursor rule, a LangChain tool description, an OpenAI custom-GPT instruction block) and it works the same way.
 
