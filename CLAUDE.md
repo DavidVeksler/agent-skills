@@ -28,7 +28,7 @@ When you notice recurring manual work — David's or your own — build the scri
 
 ## Docs contract (every active project)
 
-- **AGENTS.md is the canonical agent-instruction file** (read by Codex, Cursor, and Claude alike). **CLAUDE.md contains only `@AGENTS.md`** so Claude Code inlines it. Never maintain two full copies — they drift. When touching a repo with dual full copies, merge into AGENTS.md and pointer-ify CLAUDE.md.
+- **AGENTS.md is the only agent-instruction file** (Claude Code, Codex, and Cursor all read it natively). Do not create a project `CLAUDE.md`. When touching a repo that still has one (a legacy `@AGENTS.md` pointer or a full copy), merge any unique content into AGENTS.md and delete CLAUDE.md.
 - AGENTS.md opens with a **doc-routing table**: which doc governs which task, so agents read the smallest path.
 - `docs/` in every public-site repo has **two quick paths**: `docs/content.md` (add/edit/publish content, front to back) and `docs/marketing.md` (SEO, promotion, measurement, outreach).
 - **Provenance discipline**: published facts carry a source URL + date or a verification tier; unverifiable claims are tagged `[UNVERIFIED]` or cut.
@@ -38,7 +38,7 @@ When you notice recurring manual work — David's or your own — build the scri
 - Every deployable project has a **guarded deploy script**: preflight (clean tree, tools present) → build → quality gates → confirm prompt (skippable with `-Force`/`--yes`) → transfer → **live verification** (`curl` the public URL and grep for a distinctive string from the change).
 - Register every deployable site in `~/Projects/deploy-sites.json` so the `deploy.ps1` launcher can run it.
 - Hosting split:
-  - **Websites/static** → DigitalOcean WordOps/nginx box ([`johngalt@{IP address}`]), via scp/tar or `git push production` post-receive hooks. Cloudflare fronts all public domains.
+  - **Websites/static** → DigitalOcean WordOps/nginx box (`johngalt@198.211.102.9`), via scp/tar or `git push production` post-receive hooks. Cloudflare fronts all public domains.
   - **NZXT home server (dynamic IP)** → .NET app hosting, experiments, local inference, and CPU/GPU-intensive work (128 GB RAM, 12 GB VRAM).
 
 ## Routine fleet (target: 50+ overnight routines)
@@ -74,6 +74,7 @@ Claude scheduled tasks automate content management, marketing, SEO, feedback tri
 - **Optimize for AI answer engines as deliberately as for Google** — test visibility in ChatGPT/Claude/Perplexity on a schedule and treat it as a KPI.
 - Measurement is pulled, not eyeballed: Search Console via the `search-console` MCP, traffic via the `cloudflare-stats` skill. Weekly KPI reports append to a committed progress log.
 - **David-voice content**: no em dashes, no unverifiable claims
+- **Minimize disclaimers in copy.** Claude over-produces hedges, caveats, and "consult a professional" boilerplate. Cut them by default: state the claim, cite the source if it needs one, and stop. Keep a disclaimer only when it is legally required for the page (financial, legal, medical) or removes a real ambiguity, and then write it once, short, in David's voice, not in every section.
 - Cross-domain linking follows `~/Projects/seo-crosslinking/` (deep links over homepage links; respect donor/receiver map and per-domain constraints).
 
 ## Notes
@@ -82,9 +83,11 @@ Claude scheduled tasks automate content management, marketing, SEO, feedback tri
 
 The "Permissions" setting for routines (Auto vs Ask) is **not** in each task's `SKILL.md`, and the `scheduled-tasks` MCP `update_scheduled_task` tool has no field for it. It lives in the desktop app's registry JSON:
 
-`C:\Users\veksl\AppData\Roaming\Claude\claude-code-sessions\<sessionId>\<subId>\scheduled-tasks.json`
+`<AppData>\Claude\claude-code-sessions\<sessionId>\<subId>\scheduled-tasks.json`
 
-- Find it with: `find "/c/Users/veksl/AppData/Roaming/Claude/claude-code-sessions" -name scheduled-tasks.json`
-- Each entry in `scheduledTasks[]` has a `permissionMode` field. `"auto"` = Auto; a **missing** field defaults to Ask.
-- To set all routines to Auto: back up the file, then set `permissionMode: "auto"` on every task (preserve 2-space indent + trailing newline).
+- The MSIX install redirects AppData: the file's real home is `C:\Users\veksl\AppData\Local\Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming\Claude\claude-code-sessions\...`. Git Bash also sees it at `~/AppData/Roaming/Claude/...`; PowerShell does not. Search both roots.
+- **This registry is wiped by app reinstalls and is the single point of failure for the whole fleet** (it took out all 32 routines on 2026-07-22, silently). It is backed up in `~/Projects/claude-routines` — snapshot with `scripts/backup-claude-routines.ps1`, recover with `scripts/restore-claude-routines.ps1`. Runbook: that repo's `docs/runbook.md`.
+- Claude Desktop caches the registry in memory. Hand-edits to the file need an app restart, and creating a task through the MCP while the file is ahead of the app will overwrite it from stale state.
+- Each entry in `scheduledTasks[]` has a `permissionMode` field. `"auto"` = Auto, `"bypassPermissions"` = Bypass permissions; a **missing** field defaults to Ask.
+- To set the whole fleet to one mode: back up the file, then set that `permissionMode` value on every task (preserve 2-space indent; the file has no trailing newline). Whole fleet is on `"bypassPermissions"` as of 2026-08-21.
 - Registry also holds per-task `cronExpression`/`fireAt`, `enabled`, `model`, `cwd`, `useWorktree` — these are NOT in the SKILL.md either (schedules live here, per [[routines-migrated-to-desktop]]).
