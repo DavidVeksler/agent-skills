@@ -59,7 +59,7 @@ Claude scheduled tasks automate content management, marketing, SEO, feedback tri
 - Deterministic work goes to scripts and cron, not LLM turns. Routines orchestrate scripts; they don't re-derive what a script can compute.
 - Model tiering: Haiku for mechanical/bulk work, default model for editorial and routing, high effort only for judgment-heavy passes.
 - Bulk file reading happens in subagents; the main context gets conclusions, not dumps.
-- Claude Fable should never write code -- kick off a sub-agent to a smaller model.  Fable write [spec].md, Opus/Sonnet implements.
+- Claude Fable writes specs, not code: it is the most expensive tier, so Fable writes `[spec].md` and hands implementation to an Opus or Sonnet sub-agent.
 
 ## Security invariants
 
@@ -74,7 +74,7 @@ Claude scheduled tasks automate content management, marketing, SEO, feedback tri
 - **Optimize for AI answer engines as deliberately as for Google** — test visibility in ChatGPT/Claude/Perplexity on a schedule and treat it as a KPI.
 - Measurement is pulled, not eyeballed: Search Console via the `search-console` MCP, traffic via the `cloudflare-stats` skill. Weekly KPI reports append to a committed progress log.
 - **David-voice content**: no em dashes, no unverifiable claims
-- **Minimize disclaimers in copy.** Claude over-produces hedges, caveats, and "consult a professional" boilerplate. Cut them by default: state the claim, cite the source if it needs one, and stop. Keep a disclaimer only when it is legally required for the page (financial, legal, medical) or removes a real ambiguity, and then write it once, short, in David's voice, not in every section.
+- **Minimize disclaimers in copy.** Leave out hedges, caveats, and "consult a professional" boilerplate by default: state the claim, cite the source if it needs one, and stop. Keep a disclaimer only when it is legally required for the page (financial, legal, medical) or removes a real ambiguity, and then write it once, short, in David's voice, not in every section.
 - Cross-domain linking follows `~/Projects/seo-crosslinking/` (deep links over homepage links; respect donor/receiver map and per-domain constraints).
 
 ## Notes
@@ -90,4 +90,4 @@ The "Permissions" setting for routines (Auto vs Ask) is **not** in each task's `
 - Claude Desktop caches the registry in memory. Hand-edits to the file need an app restart, and creating a task through the MCP while the file is ahead of the app will overwrite it from stale state.
 - Each entry in `scheduledTasks[]` has a `permissionMode` field. `"auto"` = Auto, `"bypassPermissions"` = Bypass permissions; a **missing** field defaults to Ask.
 - To set the whole fleet to one mode: back up the file, then set that `permissionMode` value on every task (preserve 2-space indent; the file has no trailing newline). Whole fleet is on `"bypassPermissions"` as of 2026-08-21.
-- Registry also holds per-task `cronExpression`/`fireAt`, `enabled`, `model`, `cwd`, `useWorktree` — these are NOT in the SKILL.md either (schedules live here, per [[routines-migrated-to-desktop]]).
+- Registry also holds per-task `cronExpression`/`fireAt`, `enabled`, `model`, `cwd`, `useWorktree` — these are NOT in the SKILL.md either; schedules live only here.
